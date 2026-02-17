@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ikigai Studio Prototyper</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <main class="page-wrap">
+    <a class="back" href="index.html">← Back to Studio</a>
+    <span class="kicker">Purpose-to-Prototype Builder</span>
+    <h1>Ikigai Studio Prototyper</h1>
+    <p>Don’t just think about purpose. Prototype it. Enter short lists, then generate practical 30-day tests with impact and sustainability metrics.</p>
+
+    <section class="panel two-col">
+      <div>
+        <label for="love">What you love (comma or line separated)</label>
+        <textarea id="love">Mentoring, writing, product strategy</textarea>
+        <label for="good">What you're good at</label>
+        <textarea id="good">Explaining complexity, listening deeply, systems thinking</textarea>
+      </div>
+      <div>
+        <label for="need">What people/the world need from you</label>
+        <textarea id="need">Clarity, courage, ethical leadership</textarea>
+        <label for="paid">What people can pay for</label>
+        <textarea id="paid">Coaching, workshops, advisory</textarea>
+        <button id="generate">Generate 30-Day Prototype Plan</button>
+      </div>
+    </section>
+
+    <section id="output" class="result"></section>
+  </main>
+
+  <script>
+    const output = document.getElementById('output');
+    const parse = id => document.getElementById(id).value
+      .split(/[\n,]/)
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    const pick = (arr, i, fallback) => arr[i] || arr[0] || fallback;
+
+    document.getElementById('generate').addEventListener('click', () => {
+      const love = parse('love');
+      const good = parse('good');
+      const need = parse('need');
+      const paid = parse('paid');
+
+      const prototypes = [
+        {
+          name: 'Prototype A: Meaning x Skill',
+          desc: `Create a weekly public artifact combining ${pick(love, 0, 'your curiosity')} + ${pick(good, 0, 'your strongest skill')} to address ${pick(need, 0, 'a real human problem')}.`
+        },
+        {
+          name: 'Prototype B: Service x Livelihood',
+          desc: `Offer a 3-client pilot using ${pick(good, 1, 'your practical capability')} to deliver ${pick(paid, 0, 'paid outcomes')} with a clear transformation promise.`
+        },
+        {
+          name: 'Prototype C: Calling x Contribution',
+          desc: `Run one 60-minute free session on ${pick(need, 1, 'an urgent challenge')} and convert feedback into a repeatable offer rooted in ${pick(love, 1, 'your joy')}.`
+        }
+      ];
+
+      output.innerHTML = `
+        <h2>Your 30-Day Ikigai Sprint</h2>
+        <ol class="list-tight">${prototypes.map(p => `<li><strong>${p.name}</strong><br>${p.desc}</li>`).join('')}</ol>
+        <h3>Execution rhythm</h3>
+        <ul class="list-tight">
+          <li><strong>Week 1:</strong> Define audience + promise + one measurable outcome.</li>
+          <li><strong>Week 2:</strong> Deliver first version to 3 people. Track impact stories.</li>
+          <li><strong>Week 3:</strong> Refine and charge a small paid pilot.</li>
+          <li><strong>Week 4:</strong> Decide: scale, pivot, or archive based on evidence.</li>
+        </ul>
+        <p><strong>Metrics to track:</strong> joy (1–10), usefulness (client score), sustainability (revenue/time), energy after delivery.</p>
+        <button id="saveSprint">Save this sprint plan</button>
+      `;
+
+      document.getElementById('saveSprint').addEventListener('click', () => {
+        localStorage.setItem('ikigaiSprint', JSON.stringify({ date: new Date().toISOString(), prototypes }));
+        document.getElementById('saveSprint').textContent = 'Saved ✓';
+      });
+    });
+  </script>
+</body>
+</html>
