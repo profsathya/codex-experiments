@@ -27,3 +27,23 @@ Open:
 3. Choose **Deploy from a branch**.
 4. Select your branch and folder **`/docs`**.
 5. Save and open your published URL.
+
+## Resolve PR conflicts quickly
+
+If your PR shows merge conflicts, rebase your branch onto the latest target branch.
+
+```bash
+./scripts/sync-pr-branch.sh main origin
+```
+
+What it does:
+- verifies you are on a branch with a clean working tree
+- fetches `origin/main`
+- rebases your current branch on top of it
+
+If conflicts appear during rebase, resolve files, then run:
+
+```bash
+git add <resolved-files>
+git rebase --continue
+```
