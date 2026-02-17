@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Life Calendar + Legacy Lens</title>
+  <title>Life Calendar</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
@@ -12,6 +13,9 @@
     <span class="kicker">Time Perspective Engine</span>
     <h1>Life Calendar + Legacy Lens</h1>
     <p>Each square is one week of life. You’ll see where your weeks have gone—and intentionally allocate the weeks that remain.</p>
+    <a class="back" href="index.html">← Back to Lab</a>
+    <h1>Life Calendar</h1>
+    <p>Each square is one week. See your lived weeks, projected weeks, and the weeks left for what matters most.</p>
 
     <section class="panel two-col">
       <div>
@@ -30,6 +34,14 @@
         <label for="service">% for service/contribution</label>
         <input id="service" type="number" min="0" max="100" value="15" />
         <button id="render">Render Legacy Plan</button>
+        <input id="age" type="number" min="1" max="110" value="32" />
+        <label for="lifespan">Expected lifespan</label>
+        <input id="lifespan" type="number" min="10" max="120" value="88" />
+      </div>
+      <div>
+        <label for="goal">A meaningful project or relationship to prioritize</label>
+        <input id="goal" type="text" value="Write the book that helps my children understand courage" />
+        <button id="render">Render Life Calendar</button>
       </div>
     </section>
 
@@ -73,6 +85,19 @@
           <div><div class="small">Service</div><div class="progress"><span style="width:${srvPct}%"></span></div><div class="small">${srvWeeks.toLocaleString()} weeks</div></div>
         </div>
         <p class="small">Unallocated weeks: ${freeWeeks.toLocaleString()} (rest, health, transitions, recovery). Design those intentionally too.</p>
+    function renderCalendar() {
+      const age = Number(document.getElementById('age').value);
+      const lifespan = Number(document.getElementById('lifespan').value);
+      const goal = document.getElementById('goal').value.trim() || 'your highest priority';
+      const totalWeeks = lifespan * 52;
+      const livedWeeks = Math.min(totalWeeks, Math.max(0, Math.floor(age * 52)));
+      const leftWeeks = Math.max(0, totalWeeks - livedWeeks);
+      const focusWeeks = Math.floor(leftWeeks * 0.15);
+
+      summary.innerHTML = `
+        <h2>Perspective Snapshot</h2>
+        <p><strong>Lived:</strong> ${livedWeeks.toLocaleString()} weeks • <strong>Remaining:</strong> ${leftWeeks.toLocaleString()} weeks</p>
+        <p>If you dedicated just 15% of remaining weeks to <em>${goal}</em>, you'd invest about <strong>${focusWeeks.toLocaleString()} focused weeks</strong>.</p>
       `;
 
       let html = '';
@@ -89,6 +114,14 @@
 
     document.getElementById('render').addEventListener('click', render);
     render();
+        const cls = i < livedWeeks ? 'week used' : (i < livedWeeks + focusWeeks ? 'week highlight' : 'week');
+        html += `<span class="${cls}" title="Week ${i + 1}"></span>`;
+      }
+      calendar.innerHTML = `<h2>Week-by-Week View</h2><div class="week-grid">${html}</div>`;
+    }
+
+    document.getElementById('render').addEventListener('click', renderCalendar);
+    renderCalendar();
   </script>
 </body>
 </html>

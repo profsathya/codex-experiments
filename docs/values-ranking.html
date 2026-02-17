@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Values Ranking Arena</title>
+  <title>Values Ranking</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
@@ -25,6 +26,20 @@ Peace</textarea>
 
       <div id="arena" class="result" hidden>
         <p id="scenario" class="small"></p>
+    <a class="back" href="index.html">← Back to Lab</a>
+    <h1>Values Ranking</h1>
+    <p>Compare values in pairs. A weighted ranking appears so your decisions match what you actually care about.</p>
+
+    <section class="panel">
+      <label for="values">Enter 5–10 values (one per line)</label>
+      <textarea id="values">Integrity
+Freedom
+Family
+Impact
+Mastery
+Adventure</textarea>
+      <button id="start">Start Pairwise Ranking</button>
+      <div id="pair-ui" class="result" hidden>
         <p id="question"></p>
         <div class="two-col">
           <button id="left"></button>
@@ -33,6 +48,8 @@ Peace</textarea>
         <p id="progress" class="small"></p>
       </div>
 
+        <p class="small" id="progress"></p>
+      </div>
       <div id="result" class="result" hidden></div>
     </section>
   </main>
@@ -52,6 +69,13 @@ Peace</textarea>
     const question = document.getElementById('question');
     const left = document.getElementById('left');
     const right = document.getElementById('right');
+    const start = document.getElementById('start');
+    const valuesInput = document.getElementById('values');
+    const pairUI = document.getElementById('pair-ui');
+    const result = document.getElementById('result');
+    const question = document.getElementById('question');
+    const leftBtn = document.getElementById('left');
+    const rightBtn = document.getElementById('right');
     const progress = document.getElementById('progress');
 
     let pairs = [], scores = {}, index = 0;
@@ -76,6 +100,25 @@ Peace</textarea>
       left.textContent = a;
       right.textContent = b;
       progress.textContent = `Round ${index + 1}/${pairs.length}`;
+    function uniqueValues() {
+      return [...new Set(valuesInput.value.split('\n').map(v => v.trim()).filter(Boolean))].slice(0, 10);
+    }
+
+    function buildPairs(list) {
+      const p = [];
+      for (let i = 0; i < list.length; i++) {
+        for (let j = i + 1; j < list.length; j++) p.push([list[i], list[j]]);
+      }
+      return p;
+    }
+
+    function renderPair() {
+      if (index >= pairs.length) return finalize();
+      const [a, b] = pairs[index];
+      question.textContent = `Which matters more in your current season of life?`;
+      leftBtn.textContent = a;
+      rightBtn.textContent = b;
+      progress.textContent = `Comparison ${index + 1} of ${pairs.length}`;
     }
 
     function choose(winner) {
@@ -117,6 +160,33 @@ Peace</textarea>
 
     left.addEventListener('click', () => choose(left.textContent));
     right.addEventListener('click', () => choose(right.textContent));
+      index += 1;
+      renderPair();
+    }
+
+    function finalize() {
+      pairUI.hidden = true;
+      const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+      result.hidden = false;
+      result.innerHTML = `<h2>Your Ranked Values</h2><ol>${ranked.map(([v, s]) => `<li><strong>${v}</strong> <span class='small'>(${s} wins)</span></li>`).join('')}</ol>`;
+    }
+
+    start.addEventListener('click', () => {
+      const list = uniqueValues();
+      if (list.length < 5) {
+        alert('Please enter at least 5 values.');
+        return;
+      }
+      pairs = buildPairs(list);
+      scores = Object.fromEntries(list.map(v => [v, 0]));
+      index = 0;
+      result.hidden = true;
+      pairUI.hidden = false;
+      renderPair();
+    });
+
+    leftBtn.addEventListener('click', () => choose(leftBtn.textContent));
+    rightBtn.addEventListener('click', () => choose(rightBtn.textContent));
   </script>
 </body>
 </html>

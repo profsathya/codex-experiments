@@ -99,6 +99,56 @@
     }
 
     document.getElementById('analyze').addEventListener('click', analyze);
+    <a class="back" href="index.html">← Back to Lab</a>
+    <h1>Purpose Compass</h1>
+    <p>Rate your week from 1–10. The compass identifies imbalance and gives one practical adjustment.</p>
+
+    <section class="panel two-col">
+      <div>
+        <label for="growth">Growth (learning, challenge)</label>
+        <input id="growth" type="number" min="1" max="10" value="6" />
+        <label for="service">Service (helping others)</label>
+        <input id="service" type="number" min="1" max="10" value="5" />
+        <label for="craft">Craft (deep work, quality)</label>
+        <input id="craft" type="number" min="1" max="10" value="6" />
+      </div>
+      <div>
+        <label for="relationships">Relationships (presence, care)</label>
+        <input id="relationships" type="number" min="1" max="10" value="5" />
+        <label for="health">Health (sleep, movement, nutrition)</label>
+        <input id="health" type="number" min="1" max="10" value="7" />
+        <button id="analyze">Analyze Compass</button>
+      </div>
+    </section>
+
+    <section id="output" class="result" aria-live="polite"></section>
+  </main>
+  <script>
+    const dims = ["growth", "service", "craft", "relationships", "health"];
+    const output = document.getElementById("output");
+
+    function analyze() {
+      const scores = dims.map(d => ({ name: d, value: Number(document.getElementById(d).value) || 1 }));
+      const avg = scores.reduce((a, b) => a + b.value, 0) / scores.length;
+      const weakest = [...scores].sort((a, b) => a.value - b.value)[0];
+      const strongest = [...scores].sort((a, b) => b.value - a.value)[0];
+      const suggestions = {
+        growth: "Schedule one 45-minute learning sprint on a skill that compounds your future.",
+        service: "Do one intentional act of contribution today without expecting recognition.",
+        craft: "Protect one distraction-free block to improve the quality of your work.",
+        relationships: "Send one sincere message or spend 20 focused minutes with someone important.",
+        health: "Set a non-negotiable bedtime tonight and take a 20-minute walk."
+      };
+      output.innerHTML = `
+        <h2>Compass Reading</h2>
+        <p><strong>Average score:</strong> ${avg.toFixed(1)} / 10</p>
+        <p><strong>Strongest area:</strong> ${strongest.name} (${strongest.value})</p>
+        <p><strong>Most undernourished area:</strong> ${weakest.name} (${weakest.value})</p>
+        <p><strong>Next move:</strong> ${suggestions[weakest.name]}</p>
+      `;
+    }
+
+    document.getElementById("analyze").addEventListener("click", analyze);
     analyze();
   </script>
 </body>
