@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ikigai Studio</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <main class="page-wrap">
+    <a class="back" href="index.html">← Back to Lab</a>
+    <h1>Ikigai Studio</h1>
+    <p>Capture what you love, what you're good at, what the world needs, and what can sustain you. Turn overlap into experiments.</p>
+
+    <section class="panel two-col">
+      <div>
+        <label for="love">What I love doing</label>
+        <textarea id="love" placeholder="Mentoring, writing, designing systems..."></textarea>
+        <label for="good">What I'm good at</label>
+        <textarea id="good" placeholder="Teaching complex ideas, listening deeply..."></textarea>
+      </div>
+      <div>
+        <label for="need">What the world needs from me</label>
+        <textarea id="need" placeholder="Clearer communication, ethical leadership..."></textarea>
+        <label for="paid">What can sustain me financially</label>
+        <textarea id="paid" placeholder="Coaching, product consulting, workshops..."></textarea>
+        <button id="generate">Generate 30-Day Experiments</button>
+      </div>
+    </section>
+
+    <section id="output" class="result"></section>
+  </main>
+
+  <script>
+    const parse = id => document.getElementById(id).value.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
+    const output = document.getElementById('output');
+
+    function pick(list, fallback) { return list[0] || fallback; }
+
+    document.getElementById('generate').addEventListener('click', () => {
+      const love = parse('love');
+      const good = parse('good');
+      const need = parse('need');
+      const paid = parse('paid');
+
+      const experiments = [
+        `Host a free 45-minute session on "${pick(need, 'a key local problem')}" using your strength in ${pick(good, 'communication')} and track feedback.`,
+        `Create one weekly artifact that combines ${pick(love, 'your curiosity')} with ${pick(need, 'service')} and publish it for 4 weeks.`,
+        `Offer a paid pilot around ${pick(paid, 'your practical skill')} for 3 people and refine based on outcomes.`
+      ];
+
+      output.innerHTML = `
+        <h2>Your Ikigai Experiments</h2>
+        <ol>${experiments.map(e => `<li>${e}</li>`).join('')}</ol>
+        <p class="small">Tip: Run these as small tests. Meaning grows faster through action than overthinking.</p>
+      `;
+    });
+  </script>
+</body>
+</html>
