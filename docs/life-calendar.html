@@ -3,11 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Life Calendar + Legacy Lens</title>
   <title>Life Calendar</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
   <main class="page-wrap">
+    <a class="back" href="index.html">← Back to Studio</a>
+    <span class="kicker">Time Perspective Engine</span>
+    <h1>Life Calendar + Legacy Lens</h1>
+    <p>Each square is one week of life. You’ll see where your weeks have gone—and intentionally allocate the weeks that remain.</p>
     <a class="back" href="index.html">← Back to Lab</a>
     <h1>Life Calendar</h1>
     <p>Each square is one week. See your lived weeks, projected weeks, and the weeks left for what matters most.</p>
@@ -15,6 +20,20 @@
     <section class="panel two-col">
       <div>
         <label for="age">Current age</label>
+        <input id="age" type="number" min="1" max="110" value="34" />
+        <label for="lifespan">Expected lifespan</label>
+        <input id="lifespan" type="number" min="10" max="120" value="88" />
+        <label for="legacy">What do you want to be remembered for?</label>
+        <input id="legacy" type="text" value="I helped people become braver and more truthful." />
+      </div>
+      <div>
+        <label for="deepWork">% of remaining weeks for meaningful deep work</label>
+        <input id="deepWork" type="number" min="0" max="100" value="20" />
+        <label for="relationships">% for relationships and family</label>
+        <input id="relationships" type="number" min="0" max="100" value="25" />
+        <label for="service">% for service/contribution</label>
+        <input id="service" type="number" min="0" max="100" value="15" />
+        <button id="render">Render Legacy Plan</button>
         <input id="age" type="number" min="1" max="110" value="32" />
         <label for="lifespan">Expected lifespan</label>
         <input id="lifespan" type="number" min="10" max="120" value="88" />
@@ -34,6 +53,38 @@
     const summary = document.getElementById('summary');
     const calendar = document.getElementById('calendar');
 
+    function clamp(v) { return Math.max(0, Math.min(100, Number(v) || 0)); }
+
+    function render() {
+      const age = Number(document.getElementById('age').value);
+      const lifespan = Number(document.getElementById('lifespan').value);
+      const legacy = document.getElementById('legacy').value.trim() || 'a life of contribution';
+
+      const deepPct = clamp(document.getElementById('deepWork').value);
+      const relPct = clamp(document.getElementById('relationships').value);
+      const srvPct = clamp(document.getElementById('service').value);
+
+      const totalWeeks = lifespan * 52;
+      const livedWeeks = Math.min(totalWeeks, Math.floor(age * 52));
+      const remaining = Math.max(0, totalWeeks - livedWeeks);
+
+      const deepWeeks = Math.floor(remaining * deepPct / 100);
+      const relWeeks = Math.floor(remaining * relPct / 100);
+      const srvWeeks = Math.floor(remaining * srvPct / 100);
+
+      const allocated = deepWeeks + relWeeks + srvWeeks;
+      const freeWeeks = Math.max(0, remaining - allocated);
+
+      summary.innerHTML = `
+        <h2>Legacy Allocation Snapshot</h2>
+        <p><strong>Lived:</strong> ${livedWeeks.toLocaleString()} weeks • <strong>Remaining:</strong> ${remaining.toLocaleString()} weeks</p>
+        <p><strong>Legacy intention:</strong> “${legacy}”</p>
+        <div class="three-col">
+          <div><div class="small">Deep work</div><div class="progress"><span style="width:${deepPct}%"></span></div><div class="small">${deepWeeks.toLocaleString()} weeks</div></div>
+          <div><div class="small">Relationships</div><div class="progress"><span style="width:${relPct}%"></span></div><div class="small">${relWeeks.toLocaleString()} weeks</div></div>
+          <div><div class="small">Service</div><div class="progress"><span style="width:${srvPct}%"></span></div><div class="small">${srvWeeks.toLocaleString()} weeks</div></div>
+        </div>
+        <p class="small">Unallocated weeks: ${freeWeeks.toLocaleString()} (rest, health, transitions, recovery). Design those intentionally too.</p>
     function renderCalendar() {
       const age = Number(document.getElementById('age').value);
       const lifespan = Number(document.getElementById('lifespan').value);
@@ -51,6 +102,18 @@
 
       let html = '';
       for (let i = 0; i < totalWeeks; i++) {
+        let cls = 'week';
+        if (i < livedWeeks) cls = 'week used';
+        else if (i < livedWeeks + deepWeeks) cls = 'week highlight';
+        else if (i < livedWeeks + deepWeeks + relWeeks + srvWeeks) cls = 'week legacy';
+        html += `<span class="${cls}" title="Week ${i + 1}"></span>`;
+      }
+
+      calendar.innerHTML = `<h2>Life in Weeks</h2><p class="small">Blue = lived • Gold = planned deep work • Purple = relationship/service investment</p><div class="week-grid">${html}</div>`;
+    }
+
+    document.getElementById('render').addEventListener('click', render);
+    render();
         const cls = i < livedWeeks ? 'week used' : (i < livedWeeks + focusWeeks ? 'week highlight' : 'week');
         html += `<span class="${cls}" title="Week ${i + 1}"></span>`;
       }

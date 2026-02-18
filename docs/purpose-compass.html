@@ -8,6 +8,97 @@
 </head>
 <body>
   <main class="page-wrap">
+    <a class="back" href="index.html">← Back to Studio</a>
+    <span class="kicker">Weekly Alignment Diagnostic</span>
+    <h1>Purpose Compass</h1>
+    <p>Score each dimension 1–10 based on your last 7 days. This tool detects imbalance, your growth edge, and gives a focused commitment.</p>
+
+    <section class="panel two-col">
+      <div>
+        <label for="growth">Growth (stretch, learning)</label>
+        <input id="growth" type="range" min="1" max="10" value="6" />
+        <div class="small">Current: <span id="growthValue">6</span></div>
+
+        <label for="service">Service (contribution, generosity)</label>
+        <input id="service" type="range" min="1" max="10" value="5" />
+        <div class="small">Current: <span id="serviceValue">5</span></div>
+
+        <label for="craft">Craft (quality, focus, mastery)</label>
+        <input id="craft" type="range" min="1" max="10" value="6" />
+        <div class="small">Current: <span id="craftValue">6</span></div>
+      </div>
+      <div>
+        <label for="relationships">Relationships (presence, love)</label>
+        <input id="relationships" type="range" min="1" max="10" value="5" />
+        <div class="small">Current: <span id="relationshipsValue">5</span></div>
+
+        <label for="health">Health (energy, sleep, movement)</label>
+        <input id="health" type="range" min="1" max="10" value="7" />
+        <div class="small">Current: <span id="healthValue">7</span></div>
+
+        <button id="analyze">Generate My 7-Day Alignment Plan</button>
+      </div>
+    </section>
+
+    <section id="output" class="result"></section>
+    <section id="commitment" class="result"></section>
+  </main>
+
+  <script>
+    const dims = ['growth', 'service', 'craft', 'relationships', 'health'];
+    const suggestions = {
+      growth: ['Start one 45-minute deliberate practice block this week.', 'Read 20 pages from a book that upgrades your thinking.'],
+      service: ['Help one person solve a specific problem with no expectation.', 'Make a contribution call/message you have delayed.'],
+      craft: ['Schedule a 90-minute distraction-free deep-work block.', 'Ship one artifact at a quality level you are proud of.'],
+      relationships: ['Create a 30-minute no-phone conversation with someone important.', 'Express appreciation clearly to one person today.'],
+      health: ['Set a fixed sleep window for 5 nights this week.', 'Stack a daily 20-minute walk after your first meal.']
+    };
+
+    const output = document.getElementById('output');
+    const commitment = document.getElementById('commitment');
+
+    dims.forEach(id => {
+      const el = document.getElementById(id);
+      const label = document.getElementById(id + 'Value');
+      el.addEventListener('input', () => label.textContent = el.value);
+    });
+
+    function analyze() {
+      const scores = dims.map(name => ({ name, value: Number(document.getElementById(name).value) }));
+      const avg = scores.reduce((sum, d) => sum + d.value, 0) / scores.length;
+      const sorted = [...scores].sort((a, b) => a.value - b.value);
+      const weakest = sorted[0];
+      const secondWeakest = sorted[1];
+      const strongest = sorted.at(-1);
+      const spread = strongest.value - weakest.value;
+
+      const profile = avg >= 7.5 ? 'Momentum Phase' : avg >= 5.5 ? 'Rebuild Phase' : 'Recovery Phase';
+      const risk = spread >= 4 ? 'High imbalance: likely drift and burnout in neglected areas.' : 'Moderate balance: maintain consistency and tighten weak zones.';
+
+      output.innerHTML = `
+        <h2>Your Alignment Snapshot</h2>
+        <p><strong>Profile:</strong> ${profile} • <strong>Average:</strong> ${avg.toFixed(1)}/10 • <strong>Imbalance spread:</strong> ${spread}</p>
+        <div class="three-col">
+          ${scores.map(s => `<div><div class="small">${s.name}</div><div class="progress"><span style="width:${s.value * 10}%"></span></div></div>`).join('')}
+        </div>
+        <p class="small">${risk}</p>
+      `;
+
+      const actions = [...suggestions[weakest.name], suggestions[secondWeakest.name][0]];
+      commitment.innerHTML = `
+        <h2>7-Day Precision Plan</h2>
+        <p><strong>Primary edge:</strong> ${weakest.name} • <strong>Secondary edge:</strong> ${secondWeakest.name}</p>
+        <ol class="list-tight">${actions.map(a => `<li>${a}</li>`).join('')}</ol>
+        <button id="savePlan">Save this plan for this week</button>
+      `;
+
+      document.getElementById('savePlan').addEventListener('click', () => {
+        localStorage.setItem('purposeCompassPlan', JSON.stringify({ date: new Date().toISOString(), weakest: weakest.name, actions }));
+        document.getElementById('savePlan').textContent = 'Saved ✓';
+      });
+    }
+
+    document.getElementById('analyze').addEventListener('click', analyze);
     <a class="back" href="index.html">← Back to Lab</a>
     <h1>Purpose Compass</h1>
     <p>Rate your week from 1–10. The compass identifies imbalance and gives one practical adjustment.</p>

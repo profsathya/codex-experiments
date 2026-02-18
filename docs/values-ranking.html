@@ -3,11 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Values Ranking Arena</title>
   <title>Values Ranking</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
   <main class="page-wrap">
+    <a class="back" href="index.html">← Back to Studio</a>
+    <span class="kicker">Decision Clarity Tool</span>
+    <h1>Values Ranking Arena</h1>
+    <p>Most people list values, but don’t know which value wins in a real tradeoff. This arena creates value conflict decisions and extracts your true hierarchy.</p>
+
+    <section class="panel">
+      <label for="values">Enter 5–10 personal values (one per line)</label>
+      <textarea id="values">Integrity
+Family
+Freedom
+Mastery
+Impact
+Peace</textarea>
+      <button id="start">Start Arena</button>
+
+      <div id="arena" class="result" hidden>
+        <p id="scenario" class="small"></p>
     <a class="back" href="index.html">← Back to Lab</a>
     <h1>Values Ranking</h1>
     <p>Compare values in pairs. A weighted ranking appears so your decisions match what you actually care about.</p>
@@ -27,6 +45,9 @@ Adventure</textarea>
           <button id="left"></button>
           <button id="right"></button>
         </div>
+        <p id="progress" class="small"></p>
+      </div>
+
         <p class="small" id="progress"></p>
       </div>
       <div id="result" class="result" hidden></div>
@@ -34,6 +55,20 @@ Adventure</textarea>
   </main>
 
   <script>
+    const scenarios = [
+      'You must choose where to invest your limited energy this month.',
+      'A major opportunity conflicts with your current commitments.',
+      'Your future self asks for one decision you will be proud of in 10 years.',
+      'Under stress, only one principle can lead your next move.'
+    ];
+
+    const valuesInput = document.getElementById('values');
+    const arena = document.getElementById('arena');
+    const result = document.getElementById('result');
+    const scenario = document.getElementById('scenario');
+    const question = document.getElementById('question');
+    const left = document.getElementById('left');
+    const right = document.getElementById('right');
     const start = document.getElementById('start');
     const valuesInput = document.getElementById('values');
     const pairUI = document.getElementById('pair-ui');
@@ -45,6 +80,26 @@ Adventure</textarea>
 
     let pairs = [], scores = {}, index = 0;
 
+    function parseValues() {
+      return [...new Set(valuesInput.value.split('\n').map(v => v.trim()).filter(Boolean))].slice(0, 10);
+    }
+
+    function buildPairs(items) {
+      const out = [];
+      for (let i = 0; i < items.length; i++) {
+        for (let j = i + 1; j < items.length; j++) out.push([items[i], items[j]]);
+      }
+      return out.sort(() => Math.random() - 0.5);
+    }
+
+    function renderTurn() {
+      if (index >= pairs.length) return finish();
+      const [a, b] = pairs[index];
+      scenario.textContent = scenarios[index % scenarios.length];
+      question.textContent = 'Which value should lead your next important decision?';
+      left.textContent = a;
+      right.textContent = b;
+      progress.textContent = `Round ${index + 1}/${pairs.length}`;
     function uniqueValues() {
       return [...new Set(valuesInput.value.split('\n').map(v => v.trim()).filter(Boolean))].slice(0, 10);
     }
@@ -68,6 +123,43 @@ Adventure</textarea>
 
     function choose(winner) {
       scores[winner] += 1;
+      index++;
+      renderTurn();
+    }
+
+    function finish() {
+      arena.hidden = true;
+      result.hidden = false;
+      const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+      const top3 = ranked.slice(0, 3).map(([name]) => name);
+
+      result.innerHTML = `
+        <h2>Your Decision Hierarchy</h2>
+        <ol class="list-tight">${ranked.map(([v, s]) => `<li><strong>${v}</strong> <span class="small">(${s} wins)</span></li>`).join('')}</ol>
+        <h3>Personal Operating Rule</h3>
+        <p>When uncertain, choose the option that best honors <strong>${top3.join(' → ')}</strong>.</p>
+        <button id="saveHierarchy">Save hierarchy</button>
+      `;
+
+      document.getElementById('saveHierarchy').addEventListener('click', () => {
+        localStorage.setItem('valuesHierarchy', JSON.stringify({ date: new Date().toISOString(), ranked }));
+        document.getElementById('saveHierarchy').textContent = 'Saved ✓';
+      });
+    }
+
+    document.getElementById('start').addEventListener('click', () => {
+      const values = parseValues();
+      if (values.length < 5) return alert('Enter at least 5 values.');
+      pairs = buildPairs(values);
+      scores = Object.fromEntries(values.map(v => [v, 0]));
+      index = 0;
+      result.hidden = true;
+      arena.hidden = false;
+      renderTurn();
+    });
+
+    left.addEventListener('click', () => choose(left.textContent));
+    right.addEventListener('click', () => choose(right.textContent));
       index += 1;
       renderPair();
     }
